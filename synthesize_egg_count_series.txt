@@ -1,0 +1,3 @@
+Constrained random-walk generator for synthetic Aedes aegypti egg-count series
+
+Generates 2,000 synthetic 28-week ovitrap series by sampling each trap's seasonal total from a Gaussian Mixture Model, then allocating it across weeks via a random walk bounded by three empirically-derived constraints: a SARIMAX-based temporal trend template rescaled to match the sampled total, a volatility constraint on week-to-week change, and a magnitude constraint keeping values within both the GMM intensity anchors and a 90% confidence interval of the real 2009-2013 data.
