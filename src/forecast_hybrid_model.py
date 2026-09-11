@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.model_selection import KFold
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Bidirectional, LSTM, Dropout, Dense
 from tensorflow.keras.optimizers import Adam
@@ -13,6 +14,11 @@ BATCH_SIZE = 32
 EPOCHS = 40
 LEARNING_RATE = 0.0005
 N_FOLDS = 4
+
+# Inner folds used only to generate out-of-fold LSTM predictions for the XGBoost
+# residual stage (see compute_oof_lstm_predictions / train_hybrid_model below).
+N_INNER_FOLDS = 5
+INNER_SEED = 42
 
 XGB_N_ESTIMATORS = 300
 XGB_LEARNING_RATE = 0.02
@@ -67,16 +73,68 @@ def build_xgb_features(X_seq_raw, week_idx, y_lstm_pred):
     return np.hstack([X_flat, week, y_lstm_pred])
 
 
+def compute_oof_lstm_predictions(X_full, y, X_val_full=None, y_val=None,
+                                  n_splits=N_INNER_FOLDS, seed=INNER_SEED,
+                                  batch_size=BATCH_SIZE, epochs=EPOCHS):
+    """Generate out-of-fold LSTM predictions on the training set.
+
+    The original implementation trained one LSTM on X_full and then predicted on
+    that same X_full to build residuals for the XGBoost stage, in-sample
+    predictions are optimistically accurate, so those residuals understated the
+    LSTM's real error and gave XGBoost an unrealistically easy target.
+
+    Here, X_full is split into n_splits inner folds; for each inner fold, a
+    freshly trained LSTM predicts only on the slice it did NOT train on. The
+    concatenated predictions are therefore honest, held-out-style estimates of
+    what the LSTM would produce on data it hasn't seen, which is what the
+    XGBoost stage should be learning to correct.
+
+    This trains n_splits extra LSTMs per outer fold purely to build residuals;
+    the final LSTM used for actual validation/test predictions is still trained
+    once on the full X_full/y in train_hybrid_model, this function does not
+    replace that model.
+    """
+    oof_pred = np.zeros(len(y), dtype=float)
+    kf = KFold(n_splits=n_splits, shuffle=True, random_state=seed)
+
+    for inner_train_idx, inner_held_idx in kf.split(X_full):
+        inner_model = build_lstm_model()
+        # Prefer the outer validation fold for the LR schedule if one is given;
+        # otherwise monitor on the inner held-out slice itself.
+        monitor_full = X_val_full if X_val_full is not None else X_full[inner_held_idx]
+        monitor_y = y_val if y_val is not None else y[inner_held_idx]
+        inner_model = train_lstm_model(
+            inner_model, X_full[inner_train_idx], y[inner_train_idx],
+            monitor_full, monitor_y, batch_size=batch_size, epochs=epochs
+        )
+        oof_pred[inner_held_idx] = inner_model.predict(
+            X_full[inner_held_idx], verbose=0
+        ).flatten()
+
+    return oof_pred
+
+
 def train_hybrid_model(X_train_full, X_train_raw, y_train, X_val_full, X_val_raw, y_val,
-                        week_idx, batch_size=BATCH_SIZE, epochs=EPOCHS):
+                        week_idx, batch_size=BATCH_SIZE, epochs=EPOCHS,
+                        n_inner_folds=N_INNER_FOLDS, seed=INNER_SEED):
+    # Final LSTM, trained once on the full training set. This is the model used
+    # for every downstream prediction (validation fold, test set), unchanged
+    # from the original implementation.
     lstm_model = build_lstm_model()
     lstm_model = train_lstm_model(lstm_model, X_train_full, y_train, X_val_full, y_val,
                                    batch_size=batch_size, epochs=epochs)
 
-    y_train_lstm = lstm_model.predict(X_train_full, verbose=0).flatten()
-    residual_train = y_train - y_train_lstm
+    # Out-of-fold predictions on the training set, used ONLY to build residuals
+    # for the XGBoost stage, see compute_oof_lstm_predictions for why this
+    # replaces the original in-sample residual_train = y_train - y_train_lstm.
+    y_train_oof = compute_oof_lstm_predictions(
+        X_train_full, y_train, X_val_full, y_val,
+        n_splits=n_inner_folds, seed=seed,
+        batch_size=batch_size, epochs=epochs
+    )
+    residual_train = y_train - y_train_oof
 
-    X_train_xgb = build_xgb_features(X_train_raw, week_idx, y_train_lstm)
+    X_train_xgb = build_xgb_features(X_train_raw, week_idx, y_train_oof)
 
     xgb_model = build_xgb_model()
     xgb_model.fit(X_train_xgb, residual_train)
@@ -94,7 +152,8 @@ def predict_hybrid(lstm_model, xgb_model, X_full, X_raw, week_idx):
 def run_four_fold_cv(X_synth_full, X_synth_raw, y_synth,
                       real_seasons_full, real_seasons_raw, real_seasons_y,
                       X_test_full, X_test_raw, y_test,
-                      week_idx, batch_size=BATCH_SIZE, epochs=EPOCHS):
+                      week_idx, batch_size=BATCH_SIZE, epochs=EPOCHS,
+                      n_inner_folds=N_INNER_FOLDS, seed=INNER_SEED):
     n_folds = len(real_seasons_full)
     fold_results = []
 
@@ -115,7 +174,8 @@ def run_four_fold_cv(X_synth_full, X_synth_raw, y_synth,
 
         lstm_model, xgb_model = train_hybrid_model(
             train_full, train_raw, train_y, val_full, val_raw, val_y,
-            week_idx, batch_size=batch_size, epochs=epochs
+            week_idx, batch_size=batch_size, epochs=epochs,
+            n_inner_folds=n_inner_folds, seed=seed
         )
 
         y_val_lstm = lstm_model.predict(val_full, verbose=0).flatten()
@@ -171,5 +231,5 @@ if __name__ == "__main__":
         X_synth_full, X_synth_raw, y_synth,
         real_seasons_full, real_seasons_raw, real_seasons_y,
         X_test_full, X_test_raw, y_test,
-        week_idx, epochs=3
+        week_idx, epochs=3, n_inner_folds=3
     )

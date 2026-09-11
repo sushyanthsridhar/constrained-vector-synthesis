@@ -2,22 +2,38 @@
 
 Code accompanying "Constrained Data Synthesis with Spectral Validation for Vector Surveillance Forecasting: Application to *Aedes aegypti* Early Warning" (submitted to INFORMS Journal on Data Science).
 
-This repository implements GMM-based breeding-intensity classification, a constrained random-walk synthetic data generator, Discrete Fourier Transform (DFT) spectral validation, and a two-stage LSTM+XGBoost hybrid forecasting model with four-fold cross-validation, as described in the paper. Raw C&oacute;rdoba ovitrap records are not included; see **Data availability** below.
+This repository implements the paper's methodological contributions: GMM-based breeding-intensity classification, a constrained random-walk synthetic data generator, Discrete Fourier Transform (DFT) spectral validation, and a two-stage LSTM+XGBoost hybrid forecasting model with out-of-fold residual generation and four-fold cross-validation. Raw C&oacute;rdoba ovitrap records are not included; see **Data availability** below.
+
+## Core contributions implemented here
+
+- **`src/classify_breeding_intensity.py`** — Fits the two Gaussian Mixture Models (weekly counts and seasonal totals) to pooled 2009-2013 records and classifies each week into a mild/moderate/severe breeding-intensity phase.
+- **`src/synthesize_egg_count_series.py`** — Generates 2,000 synthetic 28-week ovitrap series via the constrained random walk bounded by the temporal trend template, volatility constraint, and magnitude constraint described in the paper.
+- **`src/validate_spectral_fidelity.py`** — Computes and compares the Fourier amplitude spectra of real and synthetic series to verify seasonal periodicity is preserved.
+- **`src/forecast_hybrid_model.py`** — The two-stage Bidirectional LSTM + XGBoost residual-correction forecaster, with out-of-fold LSTM residual generation for the XGBoost training target and the four-fold cross-validation routine over the real breeding seasons.
+- **`src/tune_residual_models.py`** — Randomized hyperparameter search tuning XGBoost, Random Forest, and Gradient Boosting as residual correctors, using an identical feature set across all three.
+- **`src/extract_landsat_indices.py`** — Computes NDVI, NDBI, and NDWI at sampled trap coordinates from LANDSAT-7 surface reflectance bands.
 
 ## Pipeline
 
 | Order | Script | Reads | Writes |
 |---|---|---|---|
-| 1 | `extract_landsat_indices.py` | `trap_coordinates.csv`; LANDSAT-7 band GeoTIFFs (B2, B3, B4, B5) | `coordinates_with_indices.csv` (adds NDVI, NDBI, NDWI per coordinate) |
-| 2 | `classify_breeding_intensity.py` | pooled 2009-2013 weekly egg counts (CSV) and per-trap seasonal totals (Excel) | fitted GMM objects and a phase label (mild/moderate/severe) per week, held in memory |
-| 3 | `synthesize_egg_count_series.py` | `synthesis_parameters.xlsx` — the SARIMAX-reconstructed weekly template, its empirical confidence bounds, and the GMM parameters from step 2 | `synthetic_series.csv` (2,000 synthetic 28-week series) and `synthetic_vs_empirical.png` |
-| 4 | `validate_spectral_fidelity.py` | `real_vs_synthetic_series.xlsx` — paired real/synthetic weekly series, one `...actual`/`...synth` row pair per year | per-year Fourier coefficients and the amplitude discrepancy (Error_k) at the dominant frequencies, held in memory |
-| 5 | `forecast_hybrid_model.py` | the assembled feature panel (23 raw features per week, 8-week windows) for the synthetic series, the real 2009-2013 seasons, and the held-out 2023-2024 test set | a trained LSTM, a trained XGBoost residual corrector, and four-fold cross-validation metrics |
-| 6 | `tune_residual_models.py` | the same feature panel as step 5, plus LSTM predictions from an already-trained model | tuned Random Forest, Gradient Boosting, and XGBoost residual correctors and their comparison metrics |
+| 1 | `src/extract_landsat_indices.py` | `trap_coordinates.csv`; LANDSAT-7 band GeoTIFFs (B2, B3, B4, B5) | `coordinates_with_indices.csv` (adds NDVI, NDBI, NDWI per coordinate) |
+| 2 | `src/classify_breeding_intensity.py` | pooled 2009-2013 weekly egg counts (CSV) and per-trap seasonal totals (Excel) | fitted GMM objects and a phase label (mild/moderate/severe) per week, held in memory |
+| 3 | `src/synthesize_egg_count_series.py` | `synthesis_parameters.xlsx` (see **Upstream artifact contracts**) and the GMM parameters from step 2 | `synthetic_series.csv` (2,000 synthetic 28-week series) and `synthetic_vs_empirical.png` |
+| 4 | `src/validate_spectral_fidelity.py` | `real_vs_synthetic_series.xlsx` (see **Upstream artifact contracts**) | per-year Fourier coefficients and the amplitude discrepancy (Error_k) at the dominant frequencies, held in memory |
+| 5 | `src/forecast_hybrid_model.py` | the assembled feature panel (see **Upstream artifact contracts**) for the synthetic series, the real 2009-2013 seasons, and the held-out 2023-2024 test set | a trained LSTM, a trained XGBoost residual corrector, and four-fold cross-validation metrics |
+| 6 | `src/tune_residual_models.py` | the same feature panel as step 5, plus LSTM predictions from an already-trained model | tuned Random Forest, Gradient Boosting, and XGBoost residual correctors and their comparison metrics |
 
-## Data split
+## Upstream artifact contracts
 
-Real ovitrap records span 2009-2013 and 2023-2024. The 2009-2013 seasons are used for GMM fitting, synthetic data generation, and the four-fold cross-validation training/validation rotation. The 2023-2024 season is held out entirely — it is not used in augmentation, GMM fitting, or any training or validation fold — and serves only as the final test set against which every reported metric in the paper is computed.
+Two of the scripts above (`src/synthesize_egg_count_series.py`, `src/validate_spectral_fidelity.py`, and `src/forecast_hybrid_model.py`) consume intermediate artifacts rather than raw data directly, so their exact expected shape is documented here:
+
+- **`synthesis_parameters.xlsx`** — the SARIMAX-reconstructed weekly template (28 weeks) with the literature-derived trend amplification already applied, plus its 90% empirical confidence bounds per week. Produced from the SARIMAX gap-reconstruction step described in Section 2.3.1-2.3.2 of the paper.
+- **`real_vs_synthetic_series.xlsx`** — paired real/synthetic weekly series, one `...actual`/`...synth` row pair per year, used for the DFT comparison.
+- **The 8-week, 23-raw-feature panel** consumed by `src/forecast_hybrid_model.py` and `src/tune_residual_models.py` — one row per trap-week, columns for the 23 predictors in Table 2 of the paper (environmental indices, climatic variables, temporal features, and autoregressive lags including Count_lag52), assembled per trap location via the KNN environmental-similarity match described in Section 2.1 for synthetic traps.
+- **Persistence baseline** — not a learned model; a naive forecast computed independently per trap. For trap *i* at week *t*, the forecast is the trap's own observed count at week *t*-1: `y_hat[i,t] = y[i,t-1]`. The lag resets at each trap's own first observed week (no cross-trap carryover), consistent with the within-trap protocol described in Section 3.2 of the paper. Evaluated over the same held-out 2023-2024 trap-weeks as the hybrid model, using the same pooled-MSE convention (errors pooled across all test trap-weeks rather than averaged per trap first).
+
+Reconstructing these artifacts from the raw environmental/climatic sources and the GMM/SARIMAX outputs is a data-assembly step specific to the restricted raw surveillance data; the finalized scripts for this step, along with the persistence/climatology baseline comparison script, will be included in the tagged release accompanying the accepted manuscript, consistent with the Data and Code Availability statement in the paper.
 
 ## Setup
 
@@ -27,39 +43,21 @@ pip install -r requirements.txt
 
 Requires Python 3.9 or later.
 
-## Expected input data
+## Expected raw input data
 
-None of the raw input data is included in this repository (see **Data availability**). To run these scripts you will need to supply, in the formats each script expects:
+None of the raw input data is included in this repository (see **Data availability**). To run the full pipeline you will need to supply, in the formats each script expects:
 
 - Pooled weekly ovitrap egg counts and per-trap seasonal totals for 2009-2013.
-- LANDSAT-7 ETM+ scene GeoTIFFs covering C&oacute;rdoba, and a CSV of candidate trap coordinates (`trap_coordinates.csv`).
+- LANDSAT-7 ETM+ scene GeoTIFFs covering C&oacute;rdoba, and a CSV of candidate trap coordinates (`trap_coordinates.csv`). Confirm the specific scene(s) used before running `src/extract_landsat_indices.py`.
 - NASA POWER climatic variables (temperature, humidity, precipitation) for the same period.
-- The SARIMAX-reconstructed weekly template and its confidence bounds, assembled into `synthesis_parameters.xlsx` (this file is produced by the SARIMAX reconstruction step, which is not part of this release — see note below).
 
-## Files
+## Data split
 
-- **`extract_landsat_indices.py`** — Computes NDVI, NDBI, and NDWI at sampled trap coordinates from LANDSAT-7 surface reflectance bands.
-- **`classify_breeding_intensity.py`** — Fits two Gaussian Mixture Models to pooled 2009-2013 records (weekly counts and seasonal totals) and classifies each week into a mild/moderate/severe breeding-intensity phase.
-- **`synthesize_egg_count_series.py`** — Generates 2,000 synthetic 28-week ovitrap series via a constrained random walk bounded by a temporal trend template, a volatility constraint, and a magnitude constraint.
-- **`validate_spectral_fidelity.py`** — Compares the Fourier amplitude spectra of real and synthetic series to confirm seasonal periodicity is preserved.
-- **`forecast_hybrid_model.py`** — The two-stage Bidirectional LSTM + XGBoost residual-correction forecaster, including the four-fold cross-validation routine over the real breeding seasons.
-- **`tune_residual_models.py`** — Randomized hyperparameter search tuning XGBoost, Random Forest, and Gradient Boosting as residual correctors, using an identical feature set across all three.
-
-Each script has a matching `.txt` file with a short, paper-accurate description.
+Real ovitrap records span 2009-2013 and 2023-2024. The 2009-2013 seasons are used for GMM fitting, synthetic data generation, and the four-fold cross-validation training/validation rotation. The 2023-2024 season is held out entirely — it is not used in augmentation, GMM fitting, or any training or validation fold — and serves only as the final test set against which every reported metric in the paper is computed.
 
 ## Data availability
 
 The raw C&oacute;rdoba ovitrap surveillance records are subject to a data-sharing agreement with the original public health authorities and cannot be redistributed here. Researchers seeking access should contact the corresponding author.
-
-## Honest reproducibility note
-
-This code reproduces the methods described in the paper, but running it end-to-end as a pipeline requires filling gaps this release does not cover:
-
-- **The SARIMAX reconstruction and literature-derived trend amplification step is not included in this release.** `synthesize_egg_count_series.py` consumes its output (the weekly template and confidence bounds in `synthesis_parameters.xlsx`) but does not produce it.
-- **`tune_residual_models.py` expects an already-trained LSTM model and its predictions in scope** (`model`, `X_train`, `y_train`, `X_test`, `y_test`, `features`); it is meant to be run after `forecast_hybrid_model.py` in the same session or notebook, not standalone.
-- **`extract_landsat_indices.py` LANDSAT scene filenames are placeholders** pointing at an October 2023 scene; confirm and replace with the scene(s) actually used before running.
-- The K-Nearest-Neighbors environmental-similarity matching step, which the paper describes as anchoring each synthetic trap location to a real 2009-2013 record by NDVI/NDBI/NDWI similarity, is not included in this release.
-- **The feature-panel assembly step is not included.** `forecast_hybrid_model.py` and `tune_residual_models.py` both expect an already-built 8-week, 23-raw-feature panel as input; the script that assembles NDVI/NDBI/NDWI, NASA POWER climatic variables, and the synthetic/real egg counts into that panel is not part of this release.
 
 ## Citation
 
