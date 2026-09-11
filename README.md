@@ -35,6 +35,10 @@ Two of the scripts above (`src/synthesize_egg_count_series.py`, `src/validate_sp
 
 Reconstructing these artifacts from the raw environmental/climatic sources and the GMM/SARIMAX outputs is a data-assembly step specific to the restricted raw surveillance data; the finalized scripts for this step, along with the persistence/climatology baseline comparison script, will be included in the tagged release accompanying the accepted manuscript, consistent with the Data and Code Availability statement in the paper.
 
+## Intermediate and model artifacts
+
+Running the pipeline also produces intermediate CSVs (`coordinates_with_indices.csv`, `synthetic_series.csv`) and trained model artifacts (fitted GMM objects, LSTM weights, the XGBoost residual corrector). These aren't checked into this repository since they depend on the restricted raw surveillance data described in `DATA_README` and are regenerated locally when the pipeline is run.
+
 ## Setup
 
 ```
