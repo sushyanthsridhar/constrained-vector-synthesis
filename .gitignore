@@ -19,6 +19,10 @@
 *.png
 *.jpg
 
+# exception: static reference figures transcribed from the manuscript, checked in intentionally
+!figures/*.png
+!figures/*.jpg
+
 # python
 __pycache__/
 *.pyc
