@@ -37,7 +37,7 @@ Reconstructing these artifacts from the raw environmental/climatic sources and t
 
 ## Intermediate and model artifacts
 
-Running the pipeline also produces intermediate CSVs (`coordinates_with_indices.csv`, `synthetic_series.csv`) and trained model artifacts (fitted GMM objects, LSTM weights, the XGBoost residual corrector). These aren't checked into this repository since they depend on the restricted raw surveillance data described in `DATA_README` and are regenerated locally when the pipeline is run.
+Running the pipeline also produces intermediate CSVs (`coordinates_with_indices.csv`, `synthetic_series.csv`) and trained model artifacts (fitted GMM objects, LSTM weights, the XGBoost residual corrector). These aren't checked into this repository since they depend on the restricted raw surveillance data described in [`DATA_README.md`](DATA_README.md) and are regenerated locally when the pipeline is run.
 
 ## Setup
 
@@ -47,21 +47,9 @@ pip install -r requirements.txt
 
 Requires Python 3.9 or later.
 
-## Expected raw input data
+## Data
 
-None of the raw input data is included in this repository (see **Data availability**). To run the full pipeline you will need to supply, in the formats each script expects:
-
-- Pooled weekly ovitrap egg counts and per-trap seasonal totals for 2009-2013.
-- LANDSAT-7 ETM+ scene GeoTIFFs covering C&oacute;rdoba, and a CSV of candidate trap coordinates (`trap_coordinates.csv`). Confirm the specific scene(s) used before running `src/extract_landsat_indices.py`.
-- NASA POWER climatic variables (temperature, humidity, precipitation) for the same period.
-
-## Data split
-
-Real ovitrap records span 2009-2013 and 2023-2024. The 2009-2013 seasons are used for GMM fitting, synthetic data generation, and the four-fold cross-validation training/validation rotation. The 2023-2024 season is held out entirely — it is not used in augmentation, GMM fitting, or any training or validation fold — and serves only as the final test set against which every reported metric in the paper is computed.
-
-## Data availability
-
-The raw C&oacute;rdoba ovitrap surveillance records are subject to a data-sharing agreement with the original public health authorities and cannot be redistributed here. Researchers seeking access should contact the corresponding author.
+None of the raw input data is included in this repository. Raw input formats, intermediate artifact contracts, the 2009-2013/2023-2024 data split, and data-availability terms are documented in [`DATA_README.md`](DATA_README.md).
 
 ## Citation
 
