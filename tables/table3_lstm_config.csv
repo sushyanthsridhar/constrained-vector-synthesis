@@ -1,0 +1,13 @@
+Component,Details
+Input Shape,8 x 27 (23 features + 4-dimensional environmental context embedding per timestep)
+Environmental Context Embedding,"4-dimensional; produced upstream by a pretrained, frozen autoencoder and concatenated before the LSTM sees the sequence"
+Layer 1,Bidirectional LSTM (64 units)
+Dropout,0.2
+Layer 2,Unidirectional LSTM (32 units)
+Dense Layer,"32 units, ReLU activation"
+Output Layer,"1 unit, Linear activation"
+Optimizer,Adam
+Learning Rate,0.0005
+Loss Function,Mean Squared Error (MSE)
+Batch Size,32
+Number of Epochs,40

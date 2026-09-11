@@ -1,0 +1,25 @@
+No.,Variable,Definition,Type
+1,NDVI,Normalized Difference Vegetation Index,Float
+2,NDBI,Normalized Difference Built-up Index,Float
+3,NDWI,Normalized Difference Water Index,Float
+4,Year,Calendar year,Integer
+5,Week,Week number within the breeding season,Integer
+6,Month,Calendar month,Integer
+7,Count_lag1,"Egg count at the forecast origin, one week prior to the predicted week",Float
+8,Count_lag2,Egg count from 2 weeks prior,Float
+9,Count_lag4,Egg count from 4 weeks prior,Float
+10,Count_lag52,Egg count from 52 weeks prior,Float
+11,Temperature,Current-week average surface temperature,Float
+12,Temperature_lag2,Current-week average temperature from 2 weeks prior,Float
+13,Temperature_lag4,Current-week average temperature from 4 weeks prior,Float
+14,Temperature_lag52,Current-week average temperature from 52 weeks prior,Float
+15,Humidity,Current-week average relative humidity,Float
+16,Humidity_lag2,Current-week average humidity from 2 weeks prior,Float
+17,Humidity_lag4,Current-week average humidity from 4 weeks prior,Float
+18,Humidity_lag52,Current-week average humidity from 52 weeks prior,Float
+19,Rainfall_roll3,"3-week rolling average precipitation, current week",Float
+20,Rainfall_lag2,Rolling-average precipitation from 2 weeks prior,Float
+21,Rainfall_lag4,Rolling-average precipitation from 4 weeks prior,Float
+22,Rainfall_lag6,Rolling-average precipitation from 6 weeks prior,Float
+23,Rainfall_lag52,Rolling-average precipitation from 52 weeks prior,Float
+--,Environmental Context Embedding,"4-dimensional output of a pretrained, frozen autoencoder over that week's NDVI, NDBI, NDWI, temperature, humidity, and precipitation",Float

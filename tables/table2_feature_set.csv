@@ -1,0 +1,7 @@
+Variable Category,Variable(s),Source and Description
+Predictive Target,Weekly Egg Count,Ovitrap surveillance records.
+Environmental,"NDVI, NDWI, NDBI","LANDSAT-7 imagery, 30 m resolution."
+Climatic (current-week average),"Surface Temperature, Relative Humidity, Total Precipitation","NASA POWER Project, ~50 km resolution; precipitation additionally smoothed with a 3-week rolling average."
+Temporal,"Calendar Year, Week Number, Month",Derived from data timestamps.
+Autoregressive,"Egg Counts (1, 2, 4, 52-wk lags); Temperature, Humidity (2, 4, 52-wk lags); Rolling-Avg. Precipitation (2, 4, 6, 52-wk lags)",Derived from target and climatic data.
+Environmental Context,"4-D embedding from a pretrained autoencoder over that week's NDVI, NDBI, NDWI, temperature, humidity, and precipitation",See Section 2.6 (Hybrid Two-Stage Forecasting Model).

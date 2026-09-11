@@ -5,6 +5,9 @@
 *.tif
 *.tiff
 
+# exception: static reference tables transcribed from the manuscript, checked in intentionally
+!tables/*.csv
+
 # model weights / trained artifacts
 *.h5
 *.keras

@@ -1,0 +1,10 @@
+Metric,Value
+MSE,40.32
+RMSE,6.35
+R2,0.86
+Nash-Sutcliffe efficiency,0.86
+MSE_pers,1332.7
+Skill_pers,0.97
+MSE_clim,471.6
+Skill_clim,0.914
+95% coverage,96%

@@ -1,0 +1,4 @@
+No.,Variable,Definition,Data Type
+1,Flattened sequence,All 8 timesteps of the 23 raw predictors (8x23=184); the 4 environmental context embedding dimensions are excluded,Float
+2,Week (last timestep),Week number,Integer
+3,LSTM prediction,LSTM-predicted egg count,Float

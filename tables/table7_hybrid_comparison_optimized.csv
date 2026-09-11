@@ -1,0 +1,5 @@
+Baseline Metric,Baseline MSE,% Impr. MSE,Baseline R2,% Impr. R2
+Mean Predictor,637.97,93.67%,0.0,N/A
+Gradient Boosting,51.33,21.44%,0.805,6.83%
+Random Forest,48.97,17.65%,0.81,6.17%
+LSTM,42.22,4.50%,0.85,1.18%

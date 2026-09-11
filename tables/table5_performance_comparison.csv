@@ -1,0 +1,11 @@
+Method,Synthetic,Mean R2,Mean MSE
+Persistence (naive),--,--,1332.7
+Climatology (naive),--,--,471.6
+Random Forest,No,0.654,96.8
+Random Forest,Yes,0.81,48.97
+Gradient Boosting,No,0.68,94.22
+Gradient Boosting,Yes,0.805,51.33
+LSTM,No,0.75,86.01
+LSTM,Yes,0.85,42.22
+LSTM + XGBoost,No,0.783,81.22
+LSTM + XGBoost,Yes,0.86,40.32

@@ -1,0 +1,23 @@
+Category,Symbol,Definition
+Indices and dimensions,t,"Time index, denoting a week within the breeding season"
+Indices and dimensions,N,Number of weekly timesteps in a single series (N = 28)
+Indices and dimensions,n,Number of trap-week observations in the evaluation set
+Indices and dimensions,k,Discrete frequency index in the Fourier decomposition
+Observations and forecasts,y_t,Observed weekly egg count per trap
+Observations and forecasts,y_hat_t,Model forecast of the weekly egg count
+Observations and forecasts,y_bar,Sample mean of the observed egg counts
+Observations and forecasts,x[t],Weekly egg count series treated as a discrete signal
+Observations and forecasts,y_hat_clim_t,"Climatology forecast, the historical mean for week t"
+Observations and forecasts,y_(t-1),One-step persistence forecast
+Spectral validation,"a_k, b_k",Fourier cosine and sine coefficients at frequency k
+Spectral validation,A_k,Amplitude spectrum at frequency k
+Spectral validation,A_k^act,Amplitude of the empirical series at frequency k
+Spectral validation,A_k^synth,Amplitude of the synthetic series at frequency k
+Spectral validation,Error_k,Absolute amplitude discrepancy at frequency k
+Data synthesis,r,"Annual trend amplification rate (r ~ 0.1%), overloaded with the correlation coefficient below"
+Model architecture,y_hat_LSTM,Initial prediction from the LSTM stage
+Model architecture,r_hat,Residual correction predicted by the XGBoost stage
+Model architecture,y_tilde,"Final refined forecast, y_tilde = y_hat_LSTM + r_hat"
+Evaluation,r,"Pearson correlation coefficient, overloaded with the trend rate above"
+Evaluation,"[L_t, U_t]",Lower and upper bounds of the 95% prediction interval
+Evaluation,1{.},Indicator function
