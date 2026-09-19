@@ -1,0 +1,5 @@
+Method,Synthetic,Mean R2,Mean MSE
+LSTM,No,0.75,86.01
+LSTM,Yes,0.85,42.22
+LSTM + XGBoost,No,0.783,81.22
+LSTM + XGBoost,Yes,0.86,40.32

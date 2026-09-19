@@ -1,0 +1,3 @@
+Gaussian Mixture Models for mosquito breeding-intensity classification
+
+Fits two GMMs to pooled 2009-2013 ovitrap records: one over weekly egg counts (component count selected by BIC, typically 3) to classify each week into mild/moderate/severe breeding intensity via posterior responsibility, and one over per-trap seasonal totals to capture year-to-year variation between low- and high-intensity seasons.

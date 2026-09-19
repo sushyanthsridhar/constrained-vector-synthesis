@@ -1,0 +1,3 @@
+NDVI/NDBI/NDWI extraction from LANDSAT-7 imagery for synthetic trap coordinates
+
+Extracts vegetation, built-up, and surface-water indices at 2,000 randomly sampled coordinates within Cordoba, by reprojecting each lat/lon into the LANDSAT-7 scene's coordinate system and reading the corresponding pixel from bands B2, B3, B4, and B5. These indices feed the environmental-similarity matching that anchors each synthetic trap to a real 2009-2013 ovitrap record.

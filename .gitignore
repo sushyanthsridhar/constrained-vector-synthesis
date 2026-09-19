@@ -1,0 +1,36 @@
+# data
+*.csv
+*.xlsx
+*.xls
+*.tif
+*.tiff
+
+# exception: static reference tables transcribed from the manuscript, checked in intentionally
+!tables/*.csv
+
+# model weights / trained artifacts
+*.h5
+*.keras
+*.pkl
+*.joblib
+
+# logs and generated outputs
+*.log
+*.png
+*.jpg
+
+# exception: static reference figures transcribed from the manuscript, checked in intentionally
+!figures/*.png
+!figures/*.jpg
+
+# python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# os / editor
+.DS_Store
+.vscode/
+.DS_Store

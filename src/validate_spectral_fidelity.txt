@@ -1,0 +1,3 @@
+Discrete Fourier Transform spectral validation for synthetic egg-count series
+
+Compares the Fourier amplitude spectra of real vs. synthetic weekly egg-count series for each year, computing the amplitude discrepancy (Error_k) at the first few dominant frequencies. Small errors at these low-frequency components confirm the synthetic data preserves the real seasonal breeding cycle, this is the quality-assurance check described in Section 2.4, not an independent validation.
