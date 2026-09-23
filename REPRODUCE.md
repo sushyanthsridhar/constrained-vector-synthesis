@@ -11,7 +11,7 @@ Scripts in `src/` implementing the following stages of the pipeline. Each script
 | Gap reconstruction of 2014-2022 (SARIMAX, no exogenous regressors) | `reconstruct_sarimax_gap.py` | Sec. 2.4.1 (`sec:gap_reconstruction`) |
 | Breeding-intensity classification (weekly and seasonal-total GMMs) | `classify_breeding_intensity.py` | Sec. 2.1, Sec. 2.4.3 (`sec:gmm`) |
 | Assembly of the synthesis parameter file from the SARIMAX template and the two GMMs | `build_synthesis_parameters.py` | Sec. 2.4.1-2.4.3 |
-| Literature trend amplification, constrained random-walk synthesis | `synthesize_egg_count_series.py` | Sec. 2.4.2-2.4.3 (`sec:trend_amplification`, `sec:gmm`) |
+| Literature trend amplification, constrained random-walk synthesis | `synthesize_egg_count_series.py` (`generate_one_series`, `compute_global_anchor`, `compute_template_band`, `compute_volatility_band`, `draw_seasonal_totals`, `compute_trap_scales`) | Sec. 2.4.2-2.4.3 (`sec:trend_amplification`, `sec:gmm`) |
 | DFT spectral validation (k = 1..4, magnitude only) | `validate_spectral_fidelity.py` | Sec. 2.4.5 (`sec:fourier_validation`) |
 | Land-cover indices from Landsat-7 ETM+ | `extract_landsat_indices.py` | Sec. 2.1 (`sec:data_description`) |
 | KNN environmental-similarity match, synthetic traps to real traps | `match_synthetic_traps_knn.py` | Sec. 2.4.4 (`sec:spatial_embedding`) |
