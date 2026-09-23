@@ -1,0 +1,3 @@
+KNN environmental-similarity match between synthetic and real trap coordinates
+
+For each of the 2,000 synthetic trap coordinates, finds the single nearest 2009-2013 real trap in normalized NDVI, NDBI, and NDWI space (z-scored using the real traps' own mean and standard deviation) via a K-Nearest Neighbors lookup with K=1. This is the feature-panel assembly step described in Section 2.4.4, separate from the egg-count synthesis in synthesize_egg_count_series.py: the matched real trap supplies the climatic and environmental context a synthetic trap's feature-panel row draws on in build_feature_panel.py.

@@ -7,23 +7,21 @@ This file documents the raw and intermediate data the pipeline expects. No raw d
 To run the full pipeline you will need to supply, in the formats each script expects:
 
 - Pooled weekly ovitrap egg counts and per-trap seasonal totals for 2009-2013.
-- LANDSAT-7 ETM+ scene GeoTIFFs covering Cordoba, and a CSV of candidate trap coordinates (`trap_coordinates.csv`). Confirm the specific scene(s) used before running `src/extract_landsat_indices.py`.
+- LANDSAT-7 ETM+ scene GeoTIFFs covering Cordoba, and CSVs of candidate trap coordinates for both the real trap network and the 2,000 synthetic coordinates (`trap_coordinates.csv`). Confirm the specific scene(s) used before running `src/extract_landsat_indices.py`.
 - NASA POWER climatic variables (temperature, humidity, precipitation) for the trap-weeks in the forecasting feature panel. The SARIMAX gap reconstruction in `src/reconstruct_sarimax_gap.py` uses no exogenous regressors.
-- Weekly egg counts for the 2023-2024 test traps (`weekly_egg_counts_2023_2024.csv`), used by `src/evaluate_naive_baselines.py`.
+- Weekly egg counts for the 2023-2024 test traps (`weekly_egg_counts_2023_2024.csv`), used by `src/evaluate_naive_baselines.py`, and a list of those 31 test trap IDs, used by `src/build_feature_panel.py` to zero-fill the 52-week lag features.
 
 ## Intermediate artifacts
 
-Two of the pipeline scripts (`src/synthesize_egg_count_series.py`, `src/validate_spectral_fidelity.py`) and the forecasting scripts (`src/forecast_hybrid_model.py`, `src/tune_residual_models.py`) consume intermediate artifacts assembled from the raw inputs above, rather than raw data directly. Their exact expected shapes:
+Most intermediate artifacts are now produced by a script rather than assembled by hand; the pipeline table in [`README.md`](README.md) lists what each script reads and writes. One artifact is still worth documenting directly, since only one script consumes it:
 
-- **`synthesis_parameters.xlsx`** - the SARIMAX-reconstructed weekly template (28 weeks) with the literature-derived trend amplification already applied, plus its 90% empirical confidence bounds per week. Assembled from the outputs of `src/reconstruct_sarimax_gap.py` (`sarimax_template_parameters.csv`, containing the amplified 2022 weekly template and the empirical week-to-week differences) together with the weekly-count GMM intensity anchors from `src/classify_breeding_intensity.py`.
 - **`real_vs_synthetic_series.xlsx`** - paired real/synthetic weekly series, one `...actual`/`...synth` row pair per year, used for the DFT comparison. `src/validate_spectral_fidelity.py` keeps its results in memory only.
-- **The 8-week, 23-raw-feature panel** consumed by `src/forecast_hybrid_model.py` and `src/tune_residual_models.py` - one row per trap-week, columns for the 23 predictors in Table 2 of the paper (environmental indices, climatic variables, temporal features, and autoregressive lags including Count_lag52), assembled per trap location via the KNN environmental-similarity match described in Section 2.1 for synthetic traps.
 
-The construction of the feature panel, lag features and sequence tensors from the raw sources is specified in Section 2.1 and Section 2.4.4 of the manuscript and in its feature-definition appendix. A more detailed written description is available from the corresponding author on request.
+The 23-raw-feature trap-week panel (Table 2 of the paper), the KNN environmental-similarity match anchoring each synthetic trap to a real 2009-2013 trap, and the 4-D environmental context embedding are specified in Section 2.1 and Section 2.4.4 of the manuscript and implemented in `src/build_feature_panel.py`, `src/match_synthetic_traps_knn.py`, and `src/train_environmental_autoencoder.py` respectively.
 
 ## Outputs not checked in
 
-Running the pipeline also produces intermediate CSVs (`coordinates_with_indices.csv`, `synthetic_series.csv`) and trained model artifacts (fitted GMM objects, LSTM weights, the XGBoost residual corrector). These aren't checked into this repository since they depend on the restricted raw surveillance data described above, and are regenerated locally when the pipeline is run.
+Running the pipeline also produces intermediate CSVs (`coordinates_with_indices.csv`, `synthetic_series.csv`, `feature_panel.csv`, `environmental_context_embedding.csv`) and trained model artifacts (fitted GMM objects, the autoencoder, LSTM weights, the XGBoost residual corrector). These aren't checked into this repository since they depend on the restricted raw surveillance data described above, and are regenerated locally when the pipeline is run.
 
 ## Data split
 

@@ -5,10 +5,17 @@ from scipy.stats import randint, uniform
 from sklearn.metrics import r2_score, mean_squared_error
 from xgboost import XGBRegressor
 
-y_train_lstm = model.predict(X_train, verbose=0).flatten()
+from forecast_hybrid_model import compute_oof_lstm_predictions
+
+N_INNER_FOLDS = 5
+INNER_SEED = 42
+
+y_train_oof = compute_oof_lstm_predictions(
+    X_train, y_train, n_splits=N_INNER_FOLDS, seed=INNER_SEED
+)
 y_test_lstm = model.predict(X_test, verbose=0).flatten()
 
-residual_train = y_train - y_train_lstm
+residual_train = y_train - y_train_oof
 residual_test = y_test - y_test_lstm
 
 
@@ -21,7 +28,7 @@ def build_residual_features(X_seq, week_col_idx, y_lstm_pred):
 
 week_idx = features.index('Week')
 
-X_train_resid = build_residual_features(X_train, week_idx, y_train_lstm)
+X_train_resid = build_residual_features(X_train, week_idx, y_train_oof)
 X_test_resid = build_residual_features(X_test, week_idx, y_test_lstm)
 y_train_resid = residual_train
 

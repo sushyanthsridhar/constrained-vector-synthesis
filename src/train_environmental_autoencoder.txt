@@ -1,0 +1,3 @@
+Pretrained autoencoder producing the 4-D environmental context embedding
+
+Trains a small dense autoencoder (6 inputs, an 8-unit hidden layer, a 4-unit linear bottleneck, mirrored decoder) to reconstruct each trap-week's normalized NDVI, NDBI, NDWI, temperature, humidity, and rolling-average precipitation. The 4-unit bottleneck is the environmental context embedding; the encoder is frozen after training and reused to compute the embedding for any trap-week, including the 2,000 synthetic traps and the 31 test traps, since it depends only on that week's environmental and climatic readings rather than a memorized trap identity. Its output becomes the four additional input channels concatenated onto the 23-feature panel before the LSTM sequence in forecast_hybrid_model.py.

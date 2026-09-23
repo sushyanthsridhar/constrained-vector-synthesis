@@ -1,0 +1,3 @@
+Assembles synthesis_parameters.xlsx from the SARIMAX template and the two breeding-intensity GMMs
+
+Refits the weekly-count and seasonal-total Gaussian Mixture Models from classify_breeding_intensity.py on the pooled 2009-2013 records, loads the amplified weekly template and empirical week-to-week differences written by reconstruct_sarimax_gap.py, and writes the combined parameter set to the exact row layout synthesize_egg_count_series.py expects (weekly GMM means, variances, and weights; seasonal-total GMM means, variances, and weights; weekly differences; and the temporal template). This replaces the manual assembly step between the SARIMAX reconstruction and the synthesis stage with a single script.
