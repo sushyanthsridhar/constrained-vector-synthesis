@@ -25,7 +25,7 @@ Running the pipeline also produces intermediate CSVs (`coordinates_with_indices.
 
 ## Data split
 
-Real ovitrap records span 2009-2013 and 2023-2024. The 2009-2013 seasons are used for GMM fitting, synthetic data generation, and the four-fold cross-validation training/validation rotation. The 2023-2024 season is held out entirely - it is not used in augmentation, GMM fitting, or any training or validation fold - and serves only as the held-out test set against which every reported metric in the paper is computed.
+Real ovitrap records span 2009-2013 and 2023-2024. The 2009-2013 seasons are used for GMM fitting, synthetic data generation, and the four development-stage training/validation trials. The 2023-2024 season is held out entirely - it is not used in augmentation, GMM fitting, or any training or validation fold - and serves only as the held-out test set against which every reported metric in the paper is computed.
 
 ## Data availability
 

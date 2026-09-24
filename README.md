@@ -2,7 +2,7 @@
 
 Code accompanying "Constrained Data Synthesis with Spectral Validation for Vector Surveillance Forecasting: Application to *Aedes aegypti* Early Warning" (submitted to INFORMS Journal on Data Science).
 
-This repository implements the paper's methodological contributions: SARIMAX gap reconstruction with literature-derived trend amplification, GMM-based breeding-intensity classification, a constrained random-walk synthetic data generator, Discrete Fourier Transform (DFT) spectral validation, KNN environmental matching and feature-panel assembly for synthetic traps, the pretrained environmental context autoencoder, and a two-stage LSTM+XGBoost hybrid forecasting model with out-of-fold residual generation and four-fold cross-validation. Raw C&oacute;rdoba ovitrap records are not included; see **Data availability** below.
+This repository implements the paper's methodological contributions: SARIMAX gap reconstruction with literature-derived trend amplification, GMM-based breeding-intensity classification, a constrained random-walk synthetic data generator, Discrete Fourier Transform (DFT) spectral validation, KNN environmental matching and feature-panel assembly for synthetic traps, the pretrained environmental context autoencoder, and a two-stage LSTM+XGBoost hybrid forecasting model with out-of-fold residual generation and four development-stage validation trials. Raw C&oacute;rdoba ovitrap records are not included; see **Data availability** below.
 
 ## Core contributions implemented here
 
@@ -15,7 +15,7 @@ This repository implements the paper's methodological contributions: SARIMAX gap
 - **`src/match_synthetic_traps_knn.py`** — Matches each synthetic trap coordinate to its nearest real 2009-2013 trap in normalized NDVI/NDBI/NDWI space.
 - **`src/build_feature_panel.py`** — Assembles the 23-raw-feature trap-week panel, its lag features (including the zero-filled Count_lag52 for the 31 test traps), and the (8, 23) sequence tensors.
 - **`src/train_environmental_autoencoder.py`** — Trains the frozen autoencoder that produces the 4-D environmental context embedding concatenated onto the feature panel.
-- **`src/forecast_hybrid_model.py`** — The two-stage Bidirectional LSTM + XGBoost residual-correction forecaster, with out-of-fold LSTM residual generation for the XGBoost training target and the four-fold cross-validation routine over the real breeding seasons.
+- **`src/forecast_hybrid_model.py`** — The two-stage Bidirectional LSTM + XGBoost residual-correction forecaster, with out-of-fold LSTM residual generation for the XGBoost training target and the four development-stage validation trials over the real breeding seasons.
 - **`src/tune_residual_models.py`** — Randomized hyperparameter search tuning XGBoost, Random Forest, and Gradient Boosting as residual correctors, using an identical feature set across all three and the same out-of-fold residual generation as the main forecaster.
 - **`src/evaluate_naive_baselines.py`** — Computes the persistence and climatology baselines on the held-out 2023-2024 test set, using the pooled-MSE convention described below.
 
@@ -32,7 +32,7 @@ This repository implements the paper's methodological contributions: SARIMAX gap
 | 7 | `src/match_synthetic_traps_knn.py` | `real_trap_coordinates_with_indices.csv` and `coordinates_with_indices.csv` from step 1 | `synthetic_trap_environmental_matches.csv` |
 | 8 | `src/build_feature_panel.py` | weekly egg counts (real and synthetic), NASA POWER climatic variables, the environmental indices from step 1, and the KNN matches from step 7 | `feature_panel.csv` (the 23-raw-feature trap-week panel) |
 | 9 | `src/train_environmental_autoencoder.py` | `feature_panel.csv` | `environmental_context_embedding.csv` (the 4-D embedding per trap-week) |
-| 10 | `src/forecast_hybrid_model.py` | `feature_panel.csv` and `environmental_context_embedding.csv`, assembled into (32, 8, 27) sequence tensors for the synthetic series, the real 2009-2013 seasons, and the held-out 2023-2024 test set | a trained LSTM, a trained XGBoost residual corrector, and four-fold cross-validation metrics |
+| 10 | `src/forecast_hybrid_model.py` | `feature_panel.csv` and `environmental_context_embedding.csv`, assembled into (32, 8, 27) sequence tensors for the synthetic series, the real 2009-2013 seasons, and the held-out 2023-2024 test set | a trained LSTM, a trained XGBoost residual corrector, and four development-stage validation trial metrics |
 | 11 | `src/tune_residual_models.py` | the same feature panel as step 10, plus LSTM predictions from an already-trained model | tuned Random Forest, Gradient Boosting, and XGBoost residual correctors and their comparison metrics |
 | 12 | `src/evaluate_naive_baselines.py` | `weekly_egg_counts_2009_2013.csv` (climatology) and `weekly_egg_counts_2023_2024.csv` (test trap-weeks) | `naive_baseline_metrics.csv` (persistence and climatology error metrics) |
 

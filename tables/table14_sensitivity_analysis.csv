@@ -1,0 +1,6 @@
+Parameter,Value Used,Plausible Range,Validation Metric
+Confidence interval bound,90%,80%-95%,"80% yields development-stage R2 in [0.6, 0.8] on the 2009-2013 development trials; 90% improves generalizability"
+GMM components,3,2-5,BIC model selection confirmed k=3
+Synthetic series count,"2,000","500-5,000","Development-stage R2 ~0.50-0.67 at 1,000 series on the development trials; rises to optimum at 2,000; further gains diminish and overfitting risk increases beyond 2,000"
+LSTM lookback window,8 weeks,4-12 weeks,R2 range of +/-0.007 across 4-12 weeks; 8 weeks Optuna-confirmed optimal
+SARIMAX model order,Fitted to 2009-2013,+/-1 AR/MA order,DFT Error_k at dominant frequency stays low across +/-1 order; downstream test R2 varies by no more than +/-0.006 across the same range
